@@ -1,0 +1,28 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <ScalaCodeStyleSettings>
+      <option name="collectImports" value="false" />
+      <option name="importLayout">
+        <array>
+          <option value="base package imports" />
+          <option value="_______ blank line _______" />
+          <option value="all other imports" />
+          <option value="_______ blank line _______" />
+          <option value="java" />
+          <option value="javax" />
+          <option value="scala" />
+          <option value="_______ blank line _______" />
+          <option value="com.smartclip.sxp.reportapi" />
+        </array>
+      </option>
+      <option name="NOT_CONTINUATION_INDENT_FOR_PARAMS" value="true" />
+      <option name="INDENT_YIELD_AFTER_ONE_LINE_ENUMERATORS" value="false" />
+      <option name="SPACE_BEFORE_TYPE_PARAMETER_LEADING_CONTEXT_BOUND_COLON_HK" value="false" />
+      <option name="SPACE_BEFORE_TYPE_PARAMETER_REST_CONTEXT_BOUND_COLONS" value="false" />
+    </ScalaCodeStyleSettings>
+    <codeStyleSettings language="Scala">
+      <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+      <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
+    </codeStyleSettings>
+  </code_scheme>
+</component>
