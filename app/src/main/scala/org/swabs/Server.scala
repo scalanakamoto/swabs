@@ -14,16 +14,15 @@ import org.http4s.server.middleware.Logger
 import org.swabs.app.Routes
 
 object Server extends IOApp.Simple with Http4sDsl[IO] {
-
   final case class ServerConfig(host: Host, port: Port)
 
   override def run: IO[Unit] = IO(startServer).flatMap(_.compile.drain)
 
   private def startServer: Stream[IO, Nothing] =
     (for {
-      serverURI    <- Stream.eval(Config.serverURI)
-      httpApp       = Router("/api" -> Routes.routes).orNotFound
-      finalHttpApp  = Logger.httpApp(logHeaders = true, logBody = true)(httpApp)
+      serverURI    <- Stream.eval(Config.serverConfig)
+      routes        = Router("/api" -> Routes.routes).orNotFound
+      finalHttpApp  = Logger.httpApp(logHeaders = true, logBody = true)(routes)
       exitCode     <- Stream.resource(
         EmberServerBuilder
           .default[IO]
@@ -35,28 +34,3 @@ object Server extends IOApp.Simple with Http4sDsl[IO] {
       )
     } yield exitCode).drain
 }
-
-/*
-*
-  /*
-  import org.swabs.app.models.User
-  import org.swabs.app.models.UserHistory
-  import org.swabs.app.models.UserHistory._
-  import org.swabs.core.redis.{Client => RedisClient}
-  import play.api.libs.json.Json
-  override def run: IO[Unit] = {
-    // test
-    for {
-      uri      <- Config.redisUri
-      client    = RedisClient(uri)
-      user      = User("derp", UserHistory(Map("a" -> "b")))
-      _        <- client.set(user.id, Json.stringify(Json.toJson(user.history)))
-      user0    <- client.lookup(user.id)
-      _        <- user0 match {
-        case Some(user) => IO.println(user)
-        case None => IO.unit
-      }
-    } yield ()
-  }
-   */
-* */
