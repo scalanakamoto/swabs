@@ -28,3 +28,4 @@ The functionality is further enhanced by being able to use Lightning integrated.
 <br><br><br>
 
 This project will build with [Cats](https://typelevel.org/cats/) and [HTTP4S](https://http4s.org/). 🧡
+
