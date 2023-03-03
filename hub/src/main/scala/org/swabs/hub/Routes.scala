@@ -1,4 +1,4 @@
-package org.swabs.app
+package org.swabs.hub
 
 import cats.data.Kleisli
 import cats.data.OptionT
@@ -8,10 +8,10 @@ import play.api.libs.json.{Json => PlayJson}
 import org.http4s._
 import org.http4s.dsl._
 import org.http4s.play.PlayEntityCodec.playEntityDecoder
-import org.swabs.app.auth.JwtAuthenticationMiddleware
-import org.swabs.app.session.models.SignUp
-import org.swabs.app.session.services.SignInService
-import org.swabs.app.session.services.SignUpService
+import org.swabs.hub.auth.JwtAuthenticationMiddleware
+import org.swabs.hub.session.models.SignUp
+import org.swabs.hub.session.services.SignInService
+import org.swabs.hub.session.services.SignUpService
 import org.swabs.core.models.UserToken
 
 object Routes extends Http4sDsl[IO]{

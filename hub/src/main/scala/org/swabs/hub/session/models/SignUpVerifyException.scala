@@ -1,13 +1,13 @@
-package org.swabs.app.session.models
+package org.swabs.hub.session.models
 
 import play.api.libs.json.Writes
 
-private[app] final case class SignUpVerifyException(
+private[hub] final case class SignUpVerifyException(
     message: String = "could not verify signature with pubkey"
 ) extends Exception {
   override def getMessage: String = message
 }
 
-private[app] object SignUpVerifyException {
+private[hub] object SignUpVerifyException {
   implicit val writes: Writes[SignUpVerifyException] = Writes.of[String].contramap(_.message)
 }

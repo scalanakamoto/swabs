@@ -17,7 +17,7 @@ val swabMainClass = Some("org.swabs.Server")
 lazy val root = (project in file("."))
   .settings(
     organization := "org.swabs",
-    name := "swabs-app",
+    name := "swabs-hub",
     version := "1.0-SNAPSHOT",
     Compile / mainClass := swabMainClass,
     run / mainClass := swabMainClass,

@@ -1,9 +1,9 @@
-package org.swabs.app.session.services
+package org.swabs.hub.session.services
 
 import cats.effect.IO
 import org.swabs.Config
-import org.swabs.app.ServiceEngine
-import org.swabs.app.auth.models.JwtToken
+import org.swabs.hub.ServiceEngine
+import org.swabs.hub.auth.models.JwtToken
 import org.swabs.core.models.UserNotFoundException
 import org.swabs.core.models.UserToken
 import pdi.jwt.Jwt
@@ -13,7 +13,7 @@ import pdi.jwt.JwtClaim
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-private[app] object SignInService extends ServiceEngine.RedisEngine {
+private[hub] object SignInService extends ServiceEngine.RedisEngine {
   def apply(userToken: UserToken): IO[JwtToken] =
     for {
       isUser <- redisClient.flatMap(_.lookup(userToken.value))

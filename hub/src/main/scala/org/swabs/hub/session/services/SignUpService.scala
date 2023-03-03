@@ -1,11 +1,11 @@
-package org.swabs.app.session.services
+package org.swabs.hub.session.services
 
 import cats.effect.IO
 import cats.kernel.Monoid
 import org.swabs.Config
-import org.swabs.app.ServiceEngine
-import org.swabs.app.session.models.SignUp
-import org.swabs.app.session.models.SignUpVerifyException
+import org.swabs.hub.ServiceEngine
+import org.swabs.hub.session.models.SignUp
+import org.swabs.hub.session.models.SignUpVerifyException
 import org.swabs.core.models.UserToken
 import org.swabs.core.models.UserModels.History
 import org.swabs.core.redis.models.RedisKeys
@@ -15,7 +15,7 @@ import play.api.libs.json.Json
 import java.security.MessageDigest
 import java.time.LocalDateTime
 
-private[app] object SignUpService extends ServiceEngine.RedisEngine {
+private[hub] object SignUpService extends ServiceEngine.RedisEngine {
   def apply(signUp: SignUp): IO[UserToken] =
     for {
       isVerified <- IO(Verification.sigWithPubkey(signUp.signature, signUp.publicKey))

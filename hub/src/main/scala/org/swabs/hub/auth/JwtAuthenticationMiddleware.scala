@@ -1,4 +1,4 @@
-package org.swabs.app.auth
+package org.swabs.hub.auth
 
 import cats.data.Kleisli
 import cats.data.OptionT
@@ -7,14 +7,14 @@ import org.http4s._
 import org.http4s.headers.Cookie
 import org.http4s.server.AuthMiddleware
 import org.swabs.Config
-import org.swabs.app.ServiceEngine.RedisEngine
-import org.swabs.app.auth.models.JwtDecodingException
+import org.swabs.hub.ServiceEngine.RedisEngine
+import org.swabs.hub.auth.models.JwtDecodingException
 import pdi.jwt.Jwt
 import pdi.jwt.JwtAlgorithm
 
 import scala.util.Success
 
-private[app] object JwtAuthenticationMiddleware extends RedisEngine {
+private[hub] object JwtAuthenticationMiddleware extends RedisEngine {
   lazy val middleware: AuthMiddleware[IO, Unit] = AuthMiddleware(authUser)
 
   private final case class CookieNotFoundException(message: String) extends Exception {
@@ -34,13 +34,12 @@ private[app] object JwtAuthenticationMiddleware extends RedisEngine {
     })
 
   private def decodeJwt(cookie: String): IO[Unit] =
-    for {
-      secret <- Config.secret
-      _      <- Jwt.decodeRawAll(cookie, secret, JwtAlgorithm.HS256 :: Nil) match {
-        case Success((_, claim, _)) if Jwt.validate(claim, secret, Seq(JwtAlgorithm.HS256)) =>
+    Config.secret.flatMap { secret =>
+      Jwt.decodeRawAll(cookie, secret, JwtAlgorithm.HS256 :: Nil) match {
+        case Success((_, claim, _)) if Jwt.isValid(claim, secret, Seq(JwtAlgorithm.HS256)) =>
           IO.unit
         case _ =>
           IO.raiseError(JwtDecodingException)
       }
-    } yield ()
+    }
 }

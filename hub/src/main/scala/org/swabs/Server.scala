@@ -11,7 +11,7 @@ import org.http4s.dsl._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
-import org.swabs.app.Routes
+import org.swabs.hub.Routes
 
 object Server extends IOApp.Simple with Http4sDsl[IO] {
   final case class ServerConfig(host: Host, port: Port)
