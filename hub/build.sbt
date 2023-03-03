@@ -4,13 +4,7 @@ ThisBuild / scalaVersion := "2.13.10"
 
 val Http4s                 = "1.0.0-M30"
 val CatsVersion            = "3.4.8"
-val LogbackVersion         = "1.4.5"
-val CatsCore               = "2.9.0"
-val MunitVersion           = "0.7.29"
-val MunitCatsEffectVersion = "1.0.7"
 val Redis4cats             = "1.4.0"
-val Circe                  = "0.14.4"
-val PlayJson               = "2.9.4"
 
 val swabMainClass = Some("org.swabs.Server")
 
@@ -27,18 +21,20 @@ lazy val root = (project in file("."))
       "-encoding", "utf8", // Specify character encoding used by source files.
       "-language:implicitConversions", // Allow definition of implicit functions called views
       "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
-      "-unchecked" // Enable additional warnings where generated code depends on assumptions.
+      "-unchecked",
+      "-Ywarn-unused" // Enable additional warnings where generated code depends on assumptions.
     ),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % "1.4.2",
       "org.typelevel" %% "cats-effect" % CatsVersion,
 
       "org.http4s" %% "http4s-ember-server" % Http4s,
+      "org.http4s" %% "http4s-ember-client" % Http4s,
       "org.http4s" %% "http4s-dsl" % Http4s,
       "org.http4s" %% "http4s-play-json" % Http4s,
 
-      "com.typesafe.play" %% "play-json" % PlayJson,
-      "io.circe" %% "circe-generic" % Circe,
+      "com.typesafe.play" %% "play-json" % "2.9.4",
+      "io.circe" %% "circe-generic" % "0.14.4",
 
       "com.github.jwt-scala" %% "jwt-core" % "9.2.0",
 
@@ -50,7 +46,7 @@ lazy val root = (project in file("."))
       "org.bouncycastle" % "bcpkix-jdk15on" % "1.69",
 
       "org.typelevel" %% "log4cats-slf4j" % "2.5.0",
-      "ch.qos.logback" % "logback-classic" % LogbackVersion % Runtime,
+      "ch.qos.logback" % "logback-classic" % "1.4.5" % Runtime,
 
       "org.scalactic" %% "scalactic" % "3.2.15",
       "org.scalatest" %% "scalatest" % "3.2.15" % "test",

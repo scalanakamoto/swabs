@@ -8,18 +8,16 @@ import com.comcast.ip4s.Port
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.{Config => TypeSafeConfig}
 import org.swabs.Server.ServerConfig
-import org.swabs.core.redis.Client.RedisConfig
+import org.swabs.core.redis.RedisConfig
 
 sealed trait Config {
-  protected val config: IO[TypeSafeConfig] = IO(ConfigFactory.load())
+  protected val config: IO[TypeSafeConfig] = IO(ConfigFactory.load("application.conf"))
 
   protected val serverUrl: IO[String] = config.map(_.getString("server.url"))
   protected val serverPort: IO[Int] = config.map(_.getInt("server.port"))
 
   protected val redisSingleClusterUri: IO[String] =
     config.map(config => s"redis://${config.getString("redis.single-node-address")}")
-
-  protected val salt: IO[String] = config.map(_.getString("token.salt"))
 
   protected val jwtSecret: IO[String] = config.map(_.getString("jwt.secret"))
 }
@@ -33,8 +31,6 @@ object Config extends Config {
       case _ => ServerConfig(ipv4"0.0.0.0", port"8443")
     }
   }
-
-  val tokenSalt: IO[String] = salt.handleErrorWith(_ => IO.raiseError(ConfigEntryNotFoundException("token salt")))
 
   val secret: IO[String] = jwtSecret.handleErrorWith(_ => IO.raiseError(ConfigEntryNotFoundException("jwt secret")))
 
