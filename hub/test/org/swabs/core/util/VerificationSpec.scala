@@ -4,6 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.encoders.Base64
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.swabs.util.SignatureWithPubkey
 
 import java.security.KeyPairGenerator
 import java.security.Security
@@ -33,7 +34,7 @@ class VerificationSpec extends AnyWordSpec with Matchers {
       val signature = new String(signatureBytes, "UTF-8")
 
       // act & assert
-      Verification.sigWithPubkey(signature, publicKeyString) mustBe true
+      SignatureWithPubkey.verify(signature, publicKeyString) mustBe true
     }
   }
 }
