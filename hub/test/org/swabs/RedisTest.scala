@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.effect.IOApp
 import cats.implicits.toShow
 import cats.implicits.toTraverseOps
+import dev.profunktor.redis4cats.effects
 import dev.profunktor.redis4cats.effects.Distance
 import dev.profunktor.redis4cats.effects.GeoLocation
 import dev.profunktor.redis4cats.effects.GeoRadius
@@ -38,12 +39,14 @@ object RedisTest extends IOApp.Simple {
 
       _      <- IO.println("user test")
       user   <- userTest(client)
+      _      <- IO.println(user)
 
       _      <- IO.println("geo test")
-      _      <- geoTest(user, client)
+      found  <- geoTest(user, client)
+      _      <- IO.println(found)
     } yield ()
 
-  private def geoTest(user: User, client: RedisClient) = {
+  private def geoTest(user: User, client: RedisClient): IO[List[effects.GeoRadiusResult[String]]] = {
     val nextUser1UUID = "d4b1a0f0-dbb8-4aa4-a02d-98a55fbfd604"
     val nextUser2UUID = "e201c85d-4f54-44f6-9fae-8678bedc97b4"
     val nextUser1 = GeoLocation(Longitude(59.90975646224532), Latitude(10.740845013978463), nextUser1UUID)
@@ -60,8 +63,8 @@ object RedisTest extends IOApp.Simple {
 
       geoRadius  = GeoRadius(long, lat, Distance(1000.0))
       radius    <- client.geoRadius(locationHashCode, geoRadius, GeoArgs.Unit.m)
-      _         <- radius.traverse(o => IO.println(o.toString))
-    } yield ()
+      found     <- radius.traverse(IO.pure).map(_.filter(_.value != user.userId.show))
+    } yield found
   }
 
   private def userTest(client: RedisClient): IO[User] =
@@ -69,14 +72,15 @@ object RedisTest extends IOApp.Simple {
       userid       <- IO(UserId(UUID.fromString("f042f433-496f-484e-958f-b8cdd77e622f")))
       transactions  = List(Transaction(
                         dateTime = TransactionDateTime(LocalDateTime.now(clock)),
-                        amount   = TransactionAmount(BigDecimal(123.0)),
+                        amount   = TransactionAmount(123.0),
                         currency = Currency.SATS,
                         note     = Note("satoshi nakamoto is a genius")
                       ))
       user          = User(userid, Events(CoreSignUp.fromClock, transactions))
-      _            <- client.update(userHashCode, user.userId.show, Json.stringify(Json.toJson(user))).handleErrorWith(_ => IO.unit)
+      _            <- client
+                        .update(userHashCode, user.userId.show, Json.stringify(Json.toJson(user)))
+                        .handleErrorWith(_ => IO.unit)
       user0        <- client.lookup(userHashCode, user.userId.show)
-      _            <- IO.println(user0)
       found        <- IO.fromOption(Json.parse(user0).asOpt[User])(new Throwable("parse error"))
     } yield found
 }

@@ -16,8 +16,6 @@ object Validate {
   def reads[T](reads: Reads[T])(implicit validate: Validate[T]): Reads[T] =
     reads.flatMap(t => validate.validate(t).fold(Reads.failed(_), Reads.pure(_)))
 
-  def cond[T](f: T => Boolean): Validate[T] = t => Either.cond(test = f(t), right = t, left = "validate.pattern")
-
   val matches: Regex => Validate[String] = regex => strValue => Either.cond(
     test = regex.matches(strValue),
     right = strValue,

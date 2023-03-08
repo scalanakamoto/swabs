@@ -42,12 +42,12 @@ object Transactions {
       Writes[LocalDateTime](dt => JsString(GlobalDateTimeFormat.apply.format(dt))).contramap(_.value)
   }
 
-  final case class TransactionAmount(value: BigDecimal) extends AnyVal
+  final case class TransactionAmount(value: Double) extends AnyVal
 
   object TransactionAmount {
-    implicit val parse: Parse[TransactionAmount] = Parse.decimalParse.map(_.setScale(8, BigDecimal.RoundingMode.HALF_UP)).map(TransactionAmount.apply)
-    implicit val reads: Reads[TransactionAmount] = Parse.reads
-    implicit val writes: Writes[TransactionAmount] = Writes.of[BigDecimal].contramap(_.value)
+    private val fnParse: Double => Double = BigDecimal(_).setScale(15, BigDecimal.RoundingMode.HALF_UP).doubleValue
+    implicit val reads: Reads[TransactionAmount] = Reads.of[Double].map(fnParse).map(TransactionAmount.apply)
+    implicit val writes: Writes[TransactionAmount] = Writes.of[Double].contramap(_.value)
   }
 
   final case class Note(value: String) extends AnyVal

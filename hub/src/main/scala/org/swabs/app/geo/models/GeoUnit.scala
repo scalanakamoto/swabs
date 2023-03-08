@@ -7,19 +7,19 @@ object GeoUnit extends Enumeration {
   type GeoUnit = Value
 
   val KM: Value = Value("KM")
-  val M: Value = Value("M")
+  val M: Value  = Value("M")
 
   implicit class RichGeoUnit(geoUnit: GeoUnit) {
     def toGeoArgsUnit: GeoArgs.Unit = geoUnit match {
       case KM => GeoArgs.Unit.km
-      case M => GeoArgs.Unit.m
+      case M  => GeoArgs.Unit.m
     }
   }
 
   implicit val reads: Reads[GeoUnit] = Reads.enumNameReads(GeoUnit)
 
   def from(geoArgsUnit: GeoArgs.Unit): GeoUnit.Value = geoArgsUnit.name() match {
-    case "m" => KM
-    case "km" => M
+    case "m"  => M
+    case "km" => KM
   }
 }

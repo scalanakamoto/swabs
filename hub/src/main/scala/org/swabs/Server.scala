@@ -26,13 +26,13 @@ object Server extends IOApp.Simple with Http4sDsl[IO] {
       serverURI    <- Stream.eval(Config.serverConfig)
       finalHttpApp  = Logger.httpApp(logHeaders = true, logBody = true)(Router("/api" -> routes).orNotFound)
       exitCode     <- Stream.resource(
-        EmberServerBuilder
-          .default[IO]
-          .withHost(serverURI.host)
-          .withPort(serverURI.port)
-          .withHttpApp(finalHttpApp)
-          .build *>
-            Resource.eval(IO.never)
-      )
+                        EmberServerBuilder
+                          .default[IO]
+                          .withHost(serverURI.host)
+                          .withPort(serverURI.port)
+                          .withHttpApp(finalHttpApp)
+                          .build *>
+                            Resource.eval(IO.never)
+                      )
     } yield exitCode).drain
 }

@@ -21,7 +21,7 @@ class UserSpec extends AnyWordSpec with Matchers {
   private val userId = UserId(UUID.fromString("f042f433-496f-484e-958f-b8cdd77e622f"))
   private val transactions = List(Transaction(
     dateTime = TransactionDateTime(LocalDateTime.parse(now)),
-    amount = TransactionAmount(BigDecimal(123.0)),
+    amount = TransactionAmount(123.0),
     currency = Currency.SATS,
     note = Note("satoshi nakamoto is a genius")
   ))

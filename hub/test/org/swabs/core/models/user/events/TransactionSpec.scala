@@ -12,16 +12,15 @@ import play.api.libs.json.Json
 import java.time.LocalDateTime
 
 class TransactionSpec extends AnyWordSpec with Matchers {
-
-  private val jsonStr = """{"dateTime":"2023-03-07T16:19:11","amount":123,"currency":"SATS","note":"satoshi was an agorist!"}"""
-
   "Transaction#reads" must {
     "work" in {
-      Json.parse(jsonStr).asOpt[Transaction] mustBe Some(Transaction(
+      Json.parse(
+        """{"dateTime":"2023-03-07T16:19:11","amount":123.0,"currency":"SATS","note":"satoshi was an agorist"}"""
+      ).as[Transaction] mustBe (Transaction(
         dateTime = TransactionDateTime(LocalDateTime.parse("2023-03-07T16:19:11")),
-        amount = TransactionAmount(BigDecimal(123.0)),
+        amount = TransactionAmount(123.0),
         currency = Currency.SATS,
-        note = Note("satoshi was an agorist!")
+        note = Note("satoshi was an agorist")
       ))
     }
   }
@@ -30,10 +29,11 @@ class TransactionSpec extends AnyWordSpec with Matchers {
     "work" in {
       Json.stringify(Json.toJson(Transaction(
         dateTime = TransactionDateTime(LocalDateTime.parse("2023-03-07T16:19:11")),
-        amount = TransactionAmount(BigDecimal(123.0)),
+        amount = TransactionAmount(123.0),
         currency = Currency.SATS,
-        note = Note("satoshi was an agorist!")
-      ))) mustBe jsonStr
+        note = Note("satoshi was an agorist")
+      ))) mustBe
+        """{"dateTime":"2023-03-07T16:19:11","amount":123,"currency":"SATS","note":"satoshi was an agorist"}"""
     }
   }
 }

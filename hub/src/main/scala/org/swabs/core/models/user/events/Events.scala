@@ -7,7 +7,6 @@ import play.api.libs.json._
 
 final case class Events(signUp: SignUp, transactions: List[Transaction]) {
   def combine(newEvent: Events): Events = Events(signUp, transactions ++ newEvent.transactions)
-  def toJsonString: String = Json.prettyPrint(Json.toJson(this))
 }
 
 object Events {

@@ -12,7 +12,7 @@ import org.swabs.app.account.services.UserService
 import org.swabs.app.auth.JwtAuthenticationMiddleware
 import org.swabs.app.geo.GeoService
 import org.swabs.app.geo.models.LookupRadiusRequest
-import org.swabs.app.geo.models.UserGeoLocation
+import org.swabs.app.geo.models.UserGeoLocationRequest
 import org.swabs.app.session.models.SignUp
 import org.swabs.app.session.services.SignInService
 import org.swabs.app.session.services.SignUpService
@@ -38,7 +38,7 @@ object Routes extends Http4sDsl[IO] {
       } yield resp
   }
 
-  def sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
+  val sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
 
   private def getUser: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" as _ =>
@@ -48,7 +48,7 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Ok).withEntity(user)
   }
 
-  private def setUserEvents: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+  private def setUserEvents(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" / "update-events" as _ =>
       for {
         user <- authReq.req.as[User]
@@ -56,14 +56,14 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Created)
   }
 
-  def userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+  val userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
       JwtAuthenticationMiddleware.middleware(getUser) <+>
-        JwtAuthenticationMiddleware.middleware(setUserEvents)
+        JwtAuthenticationMiddleware.middleware(setUserEvents())
 
-  private def setUserPosition: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+  private def setUserPosition(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" / "geo" as _ =>
       for {
-        geo <- authReq.req.as[UserGeoLocation]
+        geo <- authReq.req.as[UserGeoLocationRequest]
         _   <- GeoService.setPosition(geo)
       } yield Response[IO](Created)
   }
@@ -76,7 +76,7 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Ok).withEntity(json)
   }
 
-  def geoRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
-    JwtAuthenticationMiddleware.middleware(setUserPosition) <+>
+  val geoRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+    JwtAuthenticationMiddleware.middleware(setUserPosition()) <+>
       JwtAuthenticationMiddleware.middleware(lookupRadius)
 }

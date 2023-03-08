@@ -21,7 +21,8 @@ lazy val root = (project in file("."))
       "-encoding", "utf8", // Specify character encoding used by source files.
       "-language:implicitConversions", // Allow definition of implicit functions called views
       "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
-      "-unchecked" // Enable additional warnings where generated code depends on assumptions.
+      "-unchecked",
+      "-Ywarn-unused" // Enable additional warnings where generated code depends on assumptions.
     ),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % "1.4.2",

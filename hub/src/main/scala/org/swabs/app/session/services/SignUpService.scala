@@ -22,7 +22,7 @@ private[app] object SignUpService extends ServiceEngine.RedisEngine {
       uuid       <- IO(UUID.randomUUID())
       userId      = UserId(uuid)
       user        = User(userId = userId, events = Events(CoreSignUp.fromClock, Nil))
-      userStr    <- IO(user.toJsonString)
+      userStr    <- IO(user.asJsonString)
 
       _          <- redisClient.map(_.signup(userHashCode, uuid.show, userStr))
     } yield userId

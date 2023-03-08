@@ -21,7 +21,7 @@ class EventsSpec extends AnyWordSpec with Matchers {
         List(
           Transaction(
             dateTime = TransactionDateTime(LocalDateTime.parse("2023-03-07T16:19:11")),
-            amount = TransactionAmount(BigDecimal(123.0)),
+            amount = TransactionAmount(123.0),
             currency = Currency.SATS,
             note = Note("satoshi was an agorist!"))
         )
@@ -38,7 +38,7 @@ class EventsSpec extends AnyWordSpec with Matchers {
         List(
           Transaction(
             dateTime = TransactionDateTime(LocalDateTime.parse("2023-03-07T16:19:11")),
-            amount = TransactionAmount(BigDecimal(123.0)),
+            amount = TransactionAmount(123.0),
             currency = Currency.SATS,
             note = Note("satoshi was an agorist!"))
         )

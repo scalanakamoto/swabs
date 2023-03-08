@@ -27,4 +27,4 @@ The functionality is further enhanced by being able to use Lightning integrated.
 
 <br><br><br>
 
-This project will build with [Cats](https://typelevel.org/cats/) and [HTTP4S](https://http4s.org/). 🧡
+This project will build with [Cats 3](https://typelevel.org/cats/), [Cats Effect 3](https://typelevel.org/cats-effect/), [HTTP4S](https://http4s.org/) and [Redis4Cats](https://github.com/profunktor/redis4cats). 🧡

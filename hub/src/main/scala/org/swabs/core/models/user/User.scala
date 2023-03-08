@@ -9,7 +9,7 @@ import play.api.libs.json.Writes
 
 final case class User(userId: UserId, events: Events) {
   def update(newEvents: Events): User = User(userId, events.combine(newEvents))
-  def toJsonString: String = Json.stringify(Json.toJson(this))
+  val asJsonString: String = Json.stringify(Json.toJson(this))
 }
 
 object User {

@@ -18,7 +18,7 @@ class NoteSpec extends AnyWordSpec with Matchers {
   "Note#writes" must {
     "work" in {
       Json.stringify(Json.toJson(Note("satoshi was an agorist"))) mustBe
-        """"satoshi was an agorist!""""
+        """"satoshi was an agorist""""
     }
   }
 
