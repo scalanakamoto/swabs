@@ -8,6 +8,15 @@ val Redis4cats             = "1.4.0"
 
 val swabMainClass = Some("org.swabs.Server")
 
+Compile / PB.targets := Seq(
+  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
+)
+
+PB.protocExecutable := (
+  if (protocbridge.SystemDetector.detectedClassifier() == "osx-aarch_64") file("/usr/local/bin/protoc")
+  else PB.protocExecutable.value
+)
+
 lazy val root = (project in file("."))
   .settings(
     organization := "org.swabs",
@@ -28,7 +37,14 @@ lazy val root = (project in file("."))
       "com.typesafe" % "config" % "1.4.2",
       "org.typelevel" %% "cats-effect" % CatsVersion,
 
+      "io.grpc" % "grpc-netty-shaded" % "1.53.0",
+      "io.grpc" % "grpc-protobuf" % "1.53.0",
+      "io.grpc" % "grpc-stub" % "1.53.0",
+      "com.google.protobuf" % "protobuf-java" % "3.22.0" % "protobuf",
+      "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+
       "org.http4s" %% "http4s-ember-server" % Http4s,
+      "org.http4s" %% "http4s-blaze-server" % Http4s,
       "org.http4s" %% "http4s-ember-client" % Http4s,
       "org.http4s" %% "http4s-dsl" % Http4s,
       "org.http4s" %% "http4s-play-json" % Http4s,

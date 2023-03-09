@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_package = "org.swabs.app.geo.grpc";
+
+package org.swabs.app.geo;
+
+import "google/protobuf/empty.proto";
+
+message UserGeoLocationRequest {
+  string user_id = 1;
+  double lat = 2;
+  double lon = 3;
+}
+
+message LookupRadiusRequest {
+  UserGeoLocationRequest user_geo_location = 1;
+  double distance = 2;
+  GeoUnit unit = 3;
+}
+
+message UserGeoRadiusResponses {
+  repeated UserGeoRadiusResponse user_geo_radius_response = 1;
+}
+
+message UserGeoRadiusResponse {
+  string user_id = 1;
+  double distance = 2;
+}
+
+enum GeoUnit {
+  KM = 0;
+  MI = 1;
+}
+
+service GeoService {
+  rpc SetPosition(UserGeoLocationRequest) returns (google.protobuf.Empty);
+  rpc LookupRadius(LookupRadiusRequest) returns (UserGeoRadiusResponses);
+}

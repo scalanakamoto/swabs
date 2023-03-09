@@ -1,38 +1,43 @@
 package org.swabs
 
+import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.effect.kernel.Resource
-import cats.implicits.catsSyntaxApply
-import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
-import fs2.Stream
+import io.grpc.ManagedChannelBuilder
+import io.grpc.ServerBuilder
 import org.http4s.dsl._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 import org.swabs.app.Routes
 
-object Server extends IOApp.Simple with Http4sDsl[IO] {
+object Server extends IOApp with Http4sDsl[IO] {
   final case class ServerConfig(host: Host, port: Port)
 
-  override def run: IO[Unit] = IO(startServer).flatMap(_.compile.drain)
+  override def run(args: List[String]): IO[ExitCode] = startServer
 
-  private val routes = Routes.sessionRoutes <+> Routes.userRoutes <+> Routes.geoRoutes
+  private lazy val startServer: IO[ExitCode] =
+    for {
+      serverURI       <- Config.serverConfig
+      grpcServer       = ServerBuilder.forPort(8080).build()
+      channel          = ManagedChannelBuilder
+                           .forAddress("localhost", 8080)
+                           .usePlaintext()
+                           .asInstanceOf[ManagedChannelBuilder[_]]
+      routes           = Routes.routes(channel)
+      finalHttpApp     = Logger.httpApp(logHeaders = true, logBody = true)(Router("/api" -> routes).orNotFound)
+      httpServer       = EmberServerBuilder
+                           .default[IO]
+                           .withHost(serverURI.host)
+                           .withPort(serverURI.port)
+                           .withHttpApp(finalHttpApp)
+                           .build
 
-  private def startServer: Stream[IO, Nothing] =
-    (for {
-      serverURI    <- Stream.eval(Config.serverConfig)
-      finalHttpApp  = Logger.httpApp(logHeaders = true, logBody = true)(Router("/api" -> routes).orNotFound)
-      exitCode     <- Stream.resource(
-                        EmberServerBuilder
-                          .default[IO]
-                          .withHost(serverURI.host)
-                          .withPort(serverURI.port)
-                          .withHttpApp(finalHttpApp)
-                          .build *>
-                            Resource.eval(IO.never)
-                      )
-    } yield exitCode).drain
+      grpcServerFiber <- IO(grpcServer.start()).start
+      httpServerFiber <- httpServer.use(_ => IO.never).start
+      _               <- grpcServerFiber.join
+      _               <- httpServerFiber.join
+    } yield ExitCode.Success
 }

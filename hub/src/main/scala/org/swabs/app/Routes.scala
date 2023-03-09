@@ -4,6 +4,7 @@ import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
 import cats.implicits.toSemigroupKOps
+import io.grpc.ManagedChannelBuilder
 import org.http4s._
 import org.http4s.dsl._
 import org.http4s.play.PlayEntityCodec.playEntityDecoder
@@ -21,46 +22,46 @@ import org.swabs.core.models.user.UserId
 
 object Routes extends Http4sDsl[IO] {
   // todo signature openapi swagger: Base64 encoded signature and pubkey
-  private def signUp: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req@POST -> Root / "session" / "sign-up" =>
-      for {
-        signUp <- req.as[SignUp]
-        userId <- SignUpService.create(signUp)
-      } yield Response[IO](Ok).withEntity(userId)
-  }
+//  private def signUp: HttpRoutes[IO] = HttpRoutes.of[IO] {
+//    case req@POST -> Root / "session" / "sign-up" =>
+//      for {
+//        signUp <- req.as[SignUp]
+//        userId <- SignUpService.create(signUp)
+//      } yield Response[IO](Ok).withEntity(userId)
+//  }
 
-  private def signIn: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req@POST -> Root / "session" / "sign-in" =>
-      for {
-        userId <- req.as[UserId]
-        jwt    <- SignInService.getNewJWT(userId)
-        resp   <- Ok().map(_.addCookie("jwt", jwt.value))
-      } yield resp
-  }
+//  private def signIn: HttpRoutes[IO] = HttpRoutes.of[IO] {
+//    case req@POST -> Root / "session" / "sign-in" =>
+//      for {
+//        userId <- req.as[UserId]
+//        jwt    <- SignInService.getNewJWT(userId)
+//        resp   <- Ok().map(_.addCookie("jwt", jwt.value))
+//      } yield resp
+//  }
 
-  val sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
+//  val sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
 
-  private def getUser: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
-    case authReq@POST -> Root / "user" as _ =>
-      for {
-        userId <- authReq.req.as[UserId]
-        user   <- UserService.getUser(userId)
-      } yield Response[IO](Ok).withEntity(user)
-  }
+//  private def getUser: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+//    case authReq@POST -> Root / "user" as _ =>
+//      for {
+//        userId <- authReq.req.as[UserId]
+//        user   <- UserService.getUser(userId)
+//      } yield Response[IO](Ok).withEntity(user)
+//  }
 
-  private def setUserEvents(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
-    case authReq@POST -> Root / "user" / "update-events" as _ =>
-      for {
-        user <- authReq.req.as[User]
-        _    <- UserService.setUserEvents(user)
-      } yield Response[IO](Created)
-  }
+//  private def setUserEvents(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+//    case authReq@POST -> Root / "user" / "update-events" as _ =>
+//      for {
+//        user <- authReq.req.as[User]
+//        _    <- UserService.setUserEvents(user)
+//      } yield Response[IO](Created)
+//  }
 
-  val userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
-      JwtAuthenticationMiddleware.middleware(getUser) <+>
-        JwtAuthenticationMiddleware.middleware(setUserEvents())
+//  val userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+//      JwtAuthenticationMiddleware.middleware(getUser) <+>
+//        JwtAuthenticationMiddleware.middleware(setUserEvents())
 
-  private def setUserPosition(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+  private def setUserPosition(channel: ManagedChannelBuilder[_]): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" / "geo" as _ =>
       for {
         geo <- authReq.req.as[UserGeoLocationRequest]
@@ -68,7 +69,7 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Created)
   }
 
-  private def lookupRadius: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
+  private def lookupRadius(channel: ManagedChannelBuilder[_]): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" / "geo" / "radius" as _ =>
       for {
         req  <- authReq.req.as[LookupRadiusRequest]
@@ -76,7 +77,10 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Ok).withEntity(json)
   }
 
-  val geoRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
-    JwtAuthenticationMiddleware.middleware(setUserPosition()) <+>
-      JwtAuthenticationMiddleware.middleware(lookupRadius)
+  private def geoRoutes(channel: ManagedChannelBuilder[_]): Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+    JwtAuthenticationMiddleware.middleware(setUserPosition(channel)) <+>
+      JwtAuthenticationMiddleware.middleware(lookupRadius(channel))
+
+  def routes(channel: ManagedChannelBuilder[_]): Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+    geoRoutes(channel)
 }

@@ -2,6 +2,7 @@ package org.swabs.app.geo
 
 import cats.effect.IO
 import cats.implicits._
+import com.google.protobuf.Empty
 import dev.profunktor.redis4cats.effects.Distance
 import dev.profunktor.redis4cats.effects.GeoRadius
 import io.lettuce.core.GeoArgs
@@ -12,8 +13,8 @@ import org.swabs.app.geo.models.UserGeoLocationRequest
 import org.swabs.app.geo.models.UserGeoRadiusResponse
 
 private[app] object GeoService extends ServiceEngine.RedisEngine {
-  def setPosition(request: UserGeoLocationRequest): IO[Unit] =
-    redisClient.flatMap(_.setLocation(locationHashCode, request.asRedisGeoLocation))
+  def setPosition(request: UserGeoLocationRequest): IO[Empty] =
+    redisClient.flatMap(_.setLocation(locationHashCode, request.asRedisGeoLocation)) *> IO.pure(Empty)
 
   def lookupRadius(request: LookupRadiusRequest): IO[List[UserGeoRadiusResponse]] =
     setPosition(request.userGeoLocation) *> redisClient.flatMap { client =>
