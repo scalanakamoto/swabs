@@ -1,1 +1,1 @@
-see [REDADME](https://github.com/scalanakamoto/swabs/tree/develop/hub#readme)
+see [README](https://github.com/scalanakamoto/swabs/tree/develop/hub#readme)
