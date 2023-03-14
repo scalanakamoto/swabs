@@ -12,18 +12,17 @@ import org.http4s.dsl._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
-import org.swabs.app.Routes
+import org.swabs.app.Routes._
 
 object Server extends IOApp.Simple with Http4sDsl[IO] {
   final case class ServerConfig(host: Host, port: Port)
 
   override def run: IO[Unit] = IO(startServer).flatMap(_.compile.drain)
 
-  private val routes = Routes.sessionRoutes <+> Routes.userRoutes <+> Routes.geoRoutes
-
   private def startServer: Stream[IO, Nothing] =
     (for {
       serverURI    <- Stream.eval(Config.serverConfig)
+      routes        = sessionRoutes <+> userRoutes <+> geoRoutes
       finalHttpApp  = Logger.httpApp(logHeaders = true, logBody = true)(Router("/api" -> routes).orNotFound)
       exitCode     <- Stream.resource(
                         EmberServerBuilder

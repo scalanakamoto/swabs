@@ -20,6 +20,16 @@ import org.swabs.core.models.user.User
 import org.swabs.core.models.user.UserId
 
 object Routes extends Http4sDsl[IO] {
+  lazy val userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+    JwtAuthenticationMiddleware.middleware(getUser) <+>
+      JwtAuthenticationMiddleware.middleware(setUserEvents())
+
+  lazy val sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
+
+  lazy val geoRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
+    JwtAuthenticationMiddleware.middleware(setUserPosition()) <+>
+      JwtAuthenticationMiddleware.middleware(lookupRadius)
+
   // todo signature openapi swagger: Base64 encoded signature and pubkey
   private def signUp: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req@POST -> Root / "session" / "sign-up" =>
@@ -38,8 +48,6 @@ object Routes extends Http4sDsl[IO] {
       } yield resp
   }
 
-  val sessionRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] = signUp <+> signIn
-
   private def getUser: AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" as _ =>
       for {
@@ -56,10 +64,6 @@ object Routes extends Http4sDsl[IO] {
       } yield Response[IO](Created)
   }
 
-  val userRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
-      JwtAuthenticationMiddleware.middleware(getUser) <+>
-        JwtAuthenticationMiddleware.middleware(setUserEvents())
-
   private def setUserPosition(): AuthedRoutes[Unit, IO] = AuthedRoutes.of {
     case authReq@POST -> Root / "user" / "geo" as _ =>
       for {
@@ -75,8 +79,4 @@ object Routes extends Http4sDsl[IO] {
         json <- GeoService.lookupRadius(req)
       } yield Response[IO](Ok).withEntity(json)
   }
-
-  val geoRoutes: Kleisli[OptionT[IO, *], Request[IO], Response[IO]] =
-    JwtAuthenticationMiddleware.middleware(setUserPosition()) <+>
-      JwtAuthenticationMiddleware.middleware(lookupRadius)
 }

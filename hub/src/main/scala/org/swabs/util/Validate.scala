@@ -12,24 +12,23 @@ trait Validate[T] {
 }
 
 object Validate {
-
   def reads[T](reads: Reads[T])(implicit validate: Validate[T]): Reads[T] =
-    reads.flatMap(t => validate.validate(t).fold(Reads.failed(_), Reads.pure(_)))
+    reads.flatMap(validate.validate(_).fold(Reads.failed(_), Reads.pure(_)))
 
   val matches: Regex => Validate[String] = regex => strValue => Either.cond(
-    test = regex.matches(strValue),
+    test  = regex.matches(strValue),
     right = strValue,
-    left = "validate.pattern"
+    left  = "validate.pattern"
   )
 
   val maxLength: Int => Validate[String] = max => strValue => Either.cond(
-    test = strValue.length <= max,
+    test  = strValue.length <= max,
     right = strValue,
-    left = "validate.length.max"
+    left  = "validate.length.max"
   )
 
   implicit def monoid[T]: Monoid[Validate[T]] = new Monoid[Validate[T]] {
-    override def empty: Validate[T] = x => Right(x)
+    override def empty: Validate[T] = Right.apply
     override def combine(x: Validate[T], y: Validate[T]): Validate[T] = x.validate(_).flatMap(y.validate)
   }
 

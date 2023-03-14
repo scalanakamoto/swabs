@@ -31,6 +31,9 @@ final case class Client(config: RedisConfig) {
   def geoRadius(hashCode: String, radius: GeoRadius, unit: GeoArgs.Unit): IO[List[effects.GeoRadiusResult[String]]] =
     api.use(_.geoRadius(hashCode, radius, unit, GeoArgs.Builder.coordinates()))
 
+  def geoDist(hashCode: String, from: String, candidate: String, unit: GeoArgs.Unit): IO[Double] =
+    api.use(_.geoDist(hashCode, from, candidate, unit))
+
   def setLocation(hashCode: String, locations: GeoLocation[String]): IO[Unit] = api.use(_.geoAdd(hashCode, locations))
 
   def signup(hashCode: String, key: String, field: String): IO[Unit] =

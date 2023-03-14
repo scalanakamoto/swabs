@@ -7,9 +7,9 @@ import org.swabs.core.redis.{Client => RedisClient}
 import java.time.Clock
 
 private[app] trait ServiceEngine {
-  implicit val clock: Clock  = Clock.systemUTC()
-  final val userHashCode     = "users"
-  final val locationHashCode = "locations"
+  implicit val clock: Clock               = Clock.systemUTC()
+  final val userHashCode: "users"         = "users"
+  final val locationHashCode: "locations" = "locations"
 }
 
 private[app] object ServiceEngine {

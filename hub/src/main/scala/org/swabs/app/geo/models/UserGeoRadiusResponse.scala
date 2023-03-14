@@ -8,19 +8,17 @@ import play.api.libs.json.Writes
 private[app] final case class UserGeoRadiusResponse(
     userId: UserId,
     dist: Double,
-    geoHash: Long,
     coordinate: Coordinate
 )
 
 private[app] object UserGeoRadiusResponse {
   implicit val writes: Writes[UserGeoRadiusResponse] = Json.writes[UserGeoRadiusResponse]
 
-  def from(geoRadiusResult: GeoRadiusResult[String]): Option[UserGeoRadiusResponse] =
+  def from(geoRadiusResult: GeoRadiusResult[String], dist: Double): Option[UserGeoRadiusResponse] =
     UserId.from(geoRadiusResult.value).map { userId =>
       UserGeoRadiusResponse(
         userId     = userId,
-        dist       = geoRadiusResult.dist.value,
-        geoHash    = geoRadiusResult.hash.value,
+        dist       = dist,
         coordinate = Coordinate.from(geoRadiusResult.coordinate)
       )
     }

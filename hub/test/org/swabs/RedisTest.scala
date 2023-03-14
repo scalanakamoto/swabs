@@ -11,13 +11,12 @@ import dev.profunktor.redis4cats.effects.GeoRadius
 import dev.profunktor.redis4cats.effects.Latitude
 import dev.profunktor.redis4cats.effects.Longitude
 import io.lettuce.core.GeoArgs
-import org.swabs.core.models.user.Currency
+import org.swabs.core.models.money.Money.SATS
 import org.swabs.core.models.user.User
 import org.swabs.core.models.user.UserId
 import org.swabs.core.models.user.events.Events
 import org.swabs.core.models.user.events.Transactions.Note
 import org.swabs.core.models.user.events.Transactions.Transaction
-import org.swabs.core.models.user.events.Transactions.TransactionAmount
 import org.swabs.core.models.user.events.Transactions.TransactionDateTime
 import org.swabs.core.models.user.events.{SignUp => CoreSignUp}
 import org.swabs.core.redis.{Client => RedisClient}
@@ -64,6 +63,9 @@ object RedisTest extends IOApp.Simple {
       geoRadius  = GeoRadius(long, lat, Distance(1000.0))
       radius    <- client.geoRadius(locationHashCode, geoRadius, GeoArgs.Unit.m)
       found     <- radius.traverse(IO.pure).map(_.filter(_.value != user.userId.show))
+
+      dists     <- found.traverse(candidate => client.geoDist(locationHashCode, user.userId.show, candidate.value, GeoArgs.Unit.m))
+      _         <- IO.println(dists)
     } yield found
   }
 
@@ -72,8 +74,7 @@ object RedisTest extends IOApp.Simple {
       userid       <- IO(UserId(UUID.fromString("f042f433-496f-484e-958f-b8cdd77e622f")))
       transactions  = List(Transaction(
                         dateTime = TransactionDateTime(LocalDateTime.now(clock)),
-                        amount   = TransactionAmount(123.0),
-                        currency = Currency.SATS,
+                        money    = SATS(123),
                         note     = Note("satoshi nakamoto is a genius")
                       ))
       user          = User(userid, Events(CoreSignUp.fromClock, transactions))

@@ -1,9 +1,10 @@
 package org.swabs.app.geo
 
 import cats.effect.IO
-import cats.implicits.toShow
+import cats.implicits._
 import dev.profunktor.redis4cats.effects.Distance
 import dev.profunktor.redis4cats.effects.GeoRadius
+import io.lettuce.core.GeoArgs
 import org.swabs.app.ServiceEngine
 import org.swabs.app.geo.models.GeoUnit._
 import org.swabs.app.geo.models.LookupRadiusRequest
@@ -15,17 +16,19 @@ private[app] object GeoService extends ServiceEngine.RedisEngine {
     redisClient.flatMap(_.setLocation(locationHashCode, request.asRedisGeoLocation))
 
   def lookupRadius(request: LookupRadiusRequest): IO[List[UserGeoRadiusResponse]] =
-    redisClient.flatMap { client =>
+    setPosition(request.userGeoLocation) *> redisClient.flatMap { client =>
       for {
-        _           <- setPosition(request.userGeoLocation)
+        userId      <- IO.pure(request.userGeoLocation.userId.show)
 
-        distance    <- IO.pure(Distance(request.distance))
+        distance     = Distance(request.distance)
         geoLocation  = request.userGeoLocation.asRedisGeoLocation
         geoRadius    = GeoRadius(geoLocation.lon, geoLocation.lat, distance)
 
         results     <- client.geoRadius(locationHashCode, geoRadius, request.unit.toGeoArgsUnit)
-
-        candidates   = results.filter(_.value != request.userGeoLocation.userId.show).flatMap(UserGeoRadiusResponse.from)
+        candidates  <- results
+                        .filter(_.value != userId)
+                        .traverse(c => client.geoDist(locationHashCode, userId, c.value, GeoArgs.Unit.m).map(c -> _))
+                        .map(_.flatMap { case (candidate, distance) => UserGeoRadiusResponse.from(candidate, distance) })
       } yield candidates
     }
 }
